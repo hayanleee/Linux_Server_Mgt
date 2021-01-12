@@ -1,0 +1,43 @@
+[다른 서버 간의 postgreSQL backup/restore]
+
+베트남의 i_mes데이터베이스 전체 데이터를 백업해서 172.21.XX.XX에 복원하기
+
+================================================================
+<베트남>
+
+[root@Vietnam_A ~ ]$ mkdir /Data_Bak
+[root@Vietnam_A ~ ]$ chown -R postgres.postgres /Data_Bak/
+[root@Vietnam_A ~ ]$ su - postgres
+[postgres@Vietnam_A ~ ]$ cd /Data_Bak
+[postgres@Vietnam_A ~ ]$ pg_dump i_mes -U postgres -Fc -b -f i_MES_VN.dmp
+[postgres@Vietnam_A ~ ]$ scp i_MES_VN.dmp root@172.21.XX.XX:/Data_Bak/
+
+================================================================
+<172.21.XX.XX>
+
+[root@ ~ ]$ mkdir /Data_Bak
+[root@ ~ ]$ chown -R postgres.postgres /Data_Bak/
+[root@ ~ ]$ su - postgres
+[postgres@ ~ ]$ cd /Data_Bak
+[postgres@ ~ ]$ pg_restore -U postgres -Fc -d i_mes < i_MES_VN.dmp
+(이 계정에 i_mes라는 DB가 있어야 함)
+
+
+=============================================
+
+postgres=# \dn		(스키마 목록)
+postgres=# \l		(데이터베이스 목록)
+postgres=# \c i_mes	(다른 데이터베이스에 접속)
+i_mes=# \q		(psql 종료)
+
+
+
+
+
+
+
+백업해놓은 ip -> scp 가져갈파일 root@가져갈ip:/넣을디렉토리
+		 scp i_mes_s.bak root@172.21.NN.NN:/db/dbbackup
+
+복원해놓을 ip -> su - postgres
+		 pg_restore -U postgres -Fc -d i_mes -v < 170925_i_mes.backup

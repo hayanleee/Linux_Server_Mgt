@@ -1,0 +1,7 @@
+
+리눅스 히스토리 시간조회
+[root@localhost ~] echo export HISTTIMEFORMAT=\"[%F %T] \" > /etc/profile.d/bash_history.sh
+[root@localhost ~] chmod 755 /etc/profile.d/bash_history.sh
+로그인 이후
+[root@localhost ~] history
+ 

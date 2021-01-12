@@ -1,0 +1,73 @@
+/* 백업 서버엔 안해줘도돼, 운영에만 */
+
+<아카이브 설정>
+
+
+[root@mestest ~] vi /db/postgresql_9.6.2/data/postgresql.conf
+ ...
+wal_level=hot_standby 		#archive로 설정하면 slave에 접근이 안됨
+max_wal_senders=3 		#multi slave node 수 설정
+listen_addresses = '*'
+archive_mode = on
+archive_command = 'cp %p /home/archive/%f'
+ ...
+
+[root@mestest ~] mkdir /home/archive			// 아카이브 디렉토리 생성
+[root@mestest ~] chown -R postgres.postgres /home/archive
+
+[root@mestest ~] service postgres restart
+
+---------------------------------
+
+wal_level : 로그를 어느정도 기록할 것인지
+	    minimal - 기본값, 복구에 필요한 최소의 로그만 기록
+	    archive - 복구에 필요한 모든 WAL 아카이빙에 필요한 정보 로깅
+	    hot_standby - archive와 동일한 로깅 & Standby 구성을 위한 정보도 기록
+
+archive_mode : 아카이브 설정시 on, 노아카이브 설정시 off나 주석
+
+archive_command : 아카이브 파일 저장할 경로 설정
+		  %p - wal파일의 전체 경로를 대체
+		  %f - wal파일명을 대체
+
+---------------------------------
+
+
+select name, setting, context from pg_settings;
+
+하고 context 가 sighup,postmaster, superuser 뭐 이런 타입이 나오는데..
+reload 해도 설정 변경 되는거랑 서비스 재시작해야 설정 변경되는거 있는데 확인 해보고..
+적절하게 사용하세요.
+
+===================================================================================
+
+
+<아카이브 삭제>
+
+
+[root@mestest ~] crontab -e
+
+...
+00 09 * * * /usr/bin/del_archive_log.sh
+...
+
+[root@mestest ~] vi /usr/bin/del_archive_log.sh
+
+...
+#!/bin/bash
+ARCHIVE_DIR="/home/archive"
+
+files=$(ls $ARCHIVE_DIR/*.backup 2> /dev/null | wc -l)
+
+if [ "$files" != "0" ] ; then
+    CURBACKFILE=`find $ARCHIVE_DIR/*.backup -type f -printf "%f\n" | tail -1`
+    su - postgres -c "pg_archivecleanup  $ARCHIVE_DIR $CURBACKFILE"
+else
+    find $ARCHIVE_DIR/* -mtime +0 -exec rm -f {} \;
+fi
+
+find $ARCHIVE_DIR/ -name "*" -mtime +4 -delete
+find $ARCHIVE_DIR/ -name "*.backup" -mtime +30 -delete
+...
+
+[root@mestest ~] chmod 755 /usr/bin/del_archive_log.sh

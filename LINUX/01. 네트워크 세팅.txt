@@ -1,0 +1,61 @@
+/// 밑에 IPADDR 넣기전에 ping 돌려봐 있는거 넣으면 충돌해서 위험하니까... ///
+
+
+[root@localhost /]  ping (IP address)
+
+[root@localhost /] ifconfig -a
+(eth0 유선랜)
+
+
+
+[root@localhost /] cd /etc/sysconfig/network-scripts
+[root@localhost /] ll
+
+----------------- vi 편집기 -----------------
+ONBOOT=yes
+NM_CONTROLLED=no
+BOOTPROTO=static				// static: IP지정 / dhcp: 동적IP
+
+DEFROUTE=yes
+IPADDR=(IP address)
+GATEWAY=(IP address)
+PREFIX=24					// NETMASK=255.255.255.0 같은말	
+DNS1=(IP address)
+
+
+안해줘도돼
+#DNS2=(IP address)
+#USERCTL=no
+#IPV6INIT=no
+---------------------------------------------- 
+[root@localhost /] service network restart
+
+
+
+
+
+
+
+==============================================================
+원본
+
+----------------- vi 편집기 -----------------
+DEVICE=eth0						// 장치명, 첫번째 이더넷카드
+#HWADDR=00:1a:64:c8:8d:98				// 이더넷카드의 MAC주소
+TYPE=Ethernet
+UUID=b2f910f1-b098-484c-b41f-aa9e4d9caabb
+ONBOOT=yes						// 부팅시 자동 활성 여부 yes, no
+#NM_CONTROLLED=yes					// GUI 모드에서의 편리한 네트워크 설정 허용
+BOOTPROTO=static					// IP부여방식 (static: 고정IP / dhcp: 동적IP)
+IPV6INIT=no
+USERCTL=no						// 일반사용자의 컨트롤 가능 여부 yes, no
+IPADDR=(IP address)					// IP 주소 지정
+GATEWAY=(IP address)				// 
+NETMASK=255.255.255.0					// 서브넷 마스크 (항상 고정)				
+DNS1=(IP address)						// 판교 외부망 (항상 고정)		
+
+----------------------------------------------
+
+
+
+

@@ -1,0 +1,225 @@
+# Comfile tool 설치
+[root@localhost~]#  yum -y install gcc gcc-c++ make autoconf wget 
+[root@localhost~]#  yum -y install  readline readline-devel zlib zlib-devel openssl openssl-devel 
+[root@localhost~]#  yum -y install  gettext gettext-devel 
+[root@localhost~]#  yum -y install  python python-devel
+
+[root@localhost~]# mkdir /db
+[root@localhost~]# mkdir -p /download/postgres    	#다운로드 경로 생성( -P 옵션:  설치할 디렉토리가 없으면 자동으로 생성해줌)
+[root@localhost~]# cd /download/postgres           	# 경로 이동
+[root@localhost~]# wget http://ftp.postgresql.org/pub/source/v9.6.2/postgresql-9.6.2.tar.gz      # 다운로드 받음
+[root@localhost~]# tar xfvz postgresql-9.6.2.tar.gz   	# 압축 품.
+[root@localhost~]# cd postgresql-9.6.2                 	# 경로이동
+[root@localhost~]# ./configure --prefix=/db/postgresql_9.6.2 --enable-depend --enable-nls=ko --with-openssl --with-python   
+                       # 환경설정  (--prefix 옵션 : 컴파일된 프로그램 설치 경로, --with-python  : plpython2u  <-- 요거 하기 위해)
+				   (--enable-depend : 헤더 파일이 변경된 경우 영향받는 모든 오브젝트 파일 다시 작성되도록 makefile이 설정됨)
+				   (--enable-nls : 영어 이외의 언어에 의한 프로그램 메시지 표시 기능을 활성화, --with-openssl : SSL(암호화)연결 지원을 활성화하고 구축)
+[root@localhost~]# make             	# 소스컴파일
+[root@localhost~]# make install    	# 설치
+[root@localhost~]# cd /download/postgres/postgresql-9.6.2/contrib   	# 경로이동 (contrib : postgres 확장모듈 모아둔 경로   dblink , pgcrypto ... 등등)
+[root@localhost~]# make all        	# 소스컴파일
+[root@localhost~]# make install   	# 설치 
+
+[root@localhost~]#  useradd postgres    # postgres 유저 생성
+[root@localhost~]#  chown -R postgres.postgres /db/postgresql_9.6.2  	# postgres 유저 권한 할당
+[root@localhost~]# su - postgres        # postgres 유저로 사용자 변경
+
+[postgres@localhost~]# vi .bash_profile    	#환경변수 등록
+    .......
+# .bash_profile
+
+# Get the aliases and functions
+if [ -f ~/.bashrc ]; then
+        . ~/.bashrc
+fi
+
+# User specific environment and startup programs
+
+PATH=$PATH:$HOME/bin
+POSTGRES_HOME=/db/postgresql_9.6.2
+PATH=$PATH:$POSTGRES_HOME/bin
+PGLIB=$POSTGRES_HOME/lib
+PGDATA=$POSTGRES_HOME/data
+export POSTGRES_HOME PATH PGLIB PGDATA
+   ......
+
+[postgres@localhost~]#  source .bash_profile            #  .bash_profile 적용
+[postgres@localhost~]#  cd /db/postgresql_9.6.2       	# 경로 이동
+[postgres@localhost~]#  initdb -E UTF8 --locale=ko_KR.UTF-8 --lc-collate=ko_KR.UTF-8 --lc-ctype=ko_KR.UTF-8 -D data
+                             # 언어 셋 변경 (리눅스 언어셋 변경 (※ 리눅스가 영어로 설치되어 있으면 ko_KR.UTF-8 옵션 필수)
+[postgres@localhost~]#  vi data/postgresql.conf       	#  postgres 설정파일 변경 ( listen_addresses = '*'  , 외부에서 접속 허용)
+...
+listen_addresses = '*'            
+...
+
+[postgres@localhost~]#  pg_ctl -l pgLog.log start       # pg_ctl : postgres 서비스 관리하는 명령어(-l 옵션: 파일이름  지정)
+[postgres@localhost~]#  netstat -nltp | grep 5432      	# 포트 확인
+[postgres@localhost~]#  psql
+postgres=# ALTER USER postgres WITH PASSWORD '1588yura!';             # postgres 유저 패스워드 변경
+postgres=# CREATE USER mesplus WITH PASSWORD '1588yura!';             # mesplus 계정생성
+
+(코퍼레이션일때 : CREATE USER hr WITH PASSWORD 'hryura!';             # hr 계정생성)
+
+postgres=# CREATE USER hanics WITH PASSWORD 'hanics';                 # hanics 계정 생성
+postgres=# CREATE USER istransdata WITH PASSWORD 'Tran2plus';         # istransdata 계정생성
+postgres=# SELECT * FROM pg_shadow;                                   # DB 사용자 조회
+postgres=# CREATE USER dwhouse WITH PASSWORD 'WhouseData!';
+postgres=# \q                     	#DB 빠져 나옴.
+
+postgres@localhost~]#  vi /db/postgresql_9.6.2/data/pg_hba.conf       # postgres 접속 보안설정
+   ... 
+# "local" is for Unix domain socket connections only
+local   all             all                                     md5
+# IPv4 local connections:
+host    all             all             all                     password
+host    replication     all             all                     trust		// 이건 운영서버에만!
+# IPv6 local connections:
+host    all             all             ::1/128                 password
+  ...
+
+postgres@localhost~]#   exit     	#  init.d 는 postgres 유저가 변경 할수 없으므로 빠져 root 유저로 변경 
+[root@localhost~]# cd /etc/init.d
+[root@localhost~]# vi postgres    	# 리눅스 시작시 postgres 서비스 실행 
+  ...
+#!/bin/bash
+# chkconfig:2345 90 20
+
+# Installation prefix
+prefix=/db/postgresql_9.6.2
+
+# Data directory
+PGDATA="$prefix/data"
+
+ # Who to run the postmaster as, usually "postgres". (NOT "root")
+
+PGUSER=postgres
+
+# Where to keep a log file
+PGLOG="$prefix/serverlog"
+
+ ## STOP EDITING HERE
+# Check for echo -n vs echo \c
+
+if echo '\c' | grep -s c >/dev/null 2>&1 ; then
+        ECHO_N="echo -n"
+        ECHO_C=""
+else
+        ECHO_N="echo"
+        ECHO_C='\c'
+fi
+
+# The path that is to be used for the script
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+
+# What to use to start up the postmaster (we do NOT use pg_ctl for this,
+# as it adds no value and can cause the postmaster to misrecognize a stale
+# lock file)
+
+DAEMON="$prefix/bin/postmaster"
+
+# What to use to shut down the postmaster
+
+PGCTL="$prefix/bin/pg_ctl"
+set -e
+
+# Only start if we can find the postmaster.
+
+test -x $DAEMON || exit 0
+
+# Parse command line parameters.
+case $1 in
+        start)
+                $ECHO_N "Starting PostgreSQL: "$ECHO_C
+                su - $PGUSER -c "$DAEMON -i -D $PGDATA" >>$PGLOG 2>&1 &
+                echo "ok"
+                ;;
+        stop)
+                echo -n "Stopping PostgreSQL: "
+                su - $PGUSER -c "$PGCTL stop -D '$PGDATA' -s -m fast"
+                echo "ok"
+                ;;
+        restart)
+                echo -n "Restarting PostgreSQL: "
+                su - $PGUSER -c "$PGCTL stop -D '$PGDATA' -s -m fast -w"
+                su - $PGUSER -c "$DAEMON -D $PGDATA" >>$PGLOG 2>&1 &
+                echo "ok"
+                ;;
+        reload)
+                echo -n "Reload PostgreSQL: "
+                su - $PGUSER -c "$PGCTL reload -D '$PGDATA' -s"
+                echo "ok"
+                ;;
+        status)
+                su - $PGUSER -c "$PGCTL status -D '$PGDATA'"
+                ;;
+        *)
+                # Print help
+                echo "Usage: $0 {start|stop|restart|reload|status}" 1>&2
+                exit 1
+                ;;
+esac
+
+exit $?
+
+  ...
+[root@localhost~]# chmod 755 postgres        		# 권한 설정
+[root@localhost~]# chkconfig --add postgres  		# 서비스 자동 등록
+[root@localhost~]# chkconfig --list postgres   		# 모든 부팅레벨에 서비스 확인 
+
+[root@localhost~]#  vi /etc/sysconfig/iptables    	# 방화벽 허용 추가  (※ 방화벽 해제 할경우 아래 내용 pass)
+... 
+-A INPUT -m state --state NEW -m tcp -p tcp --dport 5432 -j ACCEPT
+...
+
+[root@localhost~]#   su - postgres      		# postgres 유저 변경
+
+[postgres@localhost~]#   psql  				# 비번치라고안하면 재부팅! 또는 pg_ctl reload
+password: (1588yura!)
+
+postgres=#  CREATE DATABASE i_mes
+     WITH OWNER = mesplus
+       ENCODING = 'UTF8'
+        TABLESPACE = pg_default
+        LC_COLLATE = 'ko_KR.UTF-8'
+        LC_CTYPE = 'ko_KR.UTF-8'
+        CONNECTION LIMIT = -1;     	# DB생성 / i_mes_2016도 하고, 대문자는 "i_HR"
+
+postgres=#        CREATE EXTENSION pgcrypto  SCHEMA public  VERSION "1.3";                      # pgcrypto   확장모듈 추가
+postgres=#        CREATE EXTENSION plpython2u SCHEMA pg_catalog VERSION "1.0";                  # plpython2u 확장모듈 추가
+postgres=#        UPDATE pg_language SET lanpltrusted = true WHERE lanname = 'plpython2u';     	# pg_language  언어변경 (왜하는지 모르겠음.)
+postgres=#        CREATE EXTENSION dblink;                                                      # dblink확장모듈 추가
+postgres=#        CREATE EXTENSION postgres_fdw;  
+
+
+↑위에 5줄 똑같이 i_mes에도 해주자!
+
+
+
+!!! postgres.conf 세팅도 해주자
+/db/postgresql_9.6.2/data/postgresql.conf
+
+
+================== ☆ 코퍼는 여기도 추가 ☆ ==================
+
+
+postgres=#  CREATE DATABASE i_mes_2016
+     WITH OWNER = mesplus
+       ENCODING = 'UTF8'
+        TABLESPACE = pg_default
+        LC_COLLATE = 'ko_KR.UTF-8'
+        LC_CTYPE = 'ko_KR.UTF-8'
+        CONNECTION LIMIT = -1;     	
+
+
+postgres=#  CREATE DATABASE "i_HR"
+     WITH OWNER = hr
+       ENCODING = 'UTF8'
+        TABLESPACE = pg_default
+        LC_COLLATE = 'ko_KR.UTF-8'
+        LC_CTYPE = 'ko_KR.UTF-8'
+        CONNECTION LIMIT = -1;     	
+
+
+// i_mes 스키마는 i_mes & i_mes_2016 엎고, i_HR 스키마는 i_HR
+
+ 

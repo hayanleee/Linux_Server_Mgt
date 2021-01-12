@@ -1,0 +1,62 @@
+[root@localhost ~]# crontab -e
+
+-----------------------------------------------------------
+00 12 * * * /usr/bin/rdate -s time.bora.net
+20 07 * * * su - postgres -c /db/schedule/i_mes_backup.sh
+-----------------------------------------------------------
+
+[root@localhost ~]# mkdir /db/schedule
+[root@localhost ~]# vi /db/schedule/i_mes_backup.sh
+
+
+#!/bin/bash
+
+beginTime=$(date +%s%N)
+
+export PGPASSWORD='qwer1234!'
+
+BACKUPPATH="/db/dbbackup/"
+BACKUPFILE=$BACKUPPATH`date '+%y%m%d'`_i_mes.backup
+
+find $BACKUPPATH -type f -name "*.backup" -mtime +2 -exec rm -f {} \;
+pg_dump -d i_mes -U postgres -F c -b -f $BACKUPFILE
+
+endTime=$(date +%s%N)
+
+elapsed=`echo "($endTime - $beginTime) / 1000000" | bc`
+
+if [ -f "$BACKUPFILE" ]; then
+    BACKUPDATE=`date -r  $BACKUPFILE "+%Y-%m-%d %H:%M:%S"`
+    BACKUPSIZE=`du -k $BACKUPFILE | awk '{print $1}'`
+    ELAPSEDSEC=`echo "scale=6;$elapsed / 1000" | bc | awk '{printf "%.6f", $1}'`
+    DBMS=`psql --version | awk '{print $2$3}'`
+
+    psql -d postgres -c "INSERT INTO sys_backupcheck (hostname, dbtype, dbname, backupdate, backuptime, filepath, filesize) values ('`hostname`','$DBMS','i_mes', '$BACKUPDATE','$ELAPSEDSEC','$BACKUPFILE','$BACKUPSIZE');"
+
+    #echo "INSERT INTO sys_backupcheck (hostname, dbtype, dbname, backupdate, backuptime, filepath, filesize) values ('`hostname`','$DBMS','i_mes', '$BACKUPDATE','$ELAPSEDSEC','$BACKUPFILE','$BACKUPSIZE');"
+fi
+
+
+[root@localhost ~]# cd /db/schedule/
+[root@localhost ~]# chmod 755 i_mes_backup.sh
+[root@localhost ~]# mkdir /db/dbbackup
+[root@localhost ~]# chown -R postgres.postgres /db/dbbackup
+
+[root@localhost ~]# su - postgres
+[postgres@localhost ~]# psql
+
+postgres=#  CREATE TABLE public.sys_backupcheck (
+	hostname bpchar(20) NOT NULL,
+	dbtype bpchar(30) NOT NULL,
+	dbname bpchar(10) NOT NULL,
+	backupdate timestamp NOT NULL,
+	backuptime bpchar(20) NULL DEFAULT ''::bpchar,
+	filepath bpchar(50) NULL DEFAULT ''::bpchar,
+	filesize bpchar(20) NULL DEFAULT ''::bpchar,
+	PRIMARY KEY (hostname, backupdate)
+)
+WITH (
+	OIDS=FALSE
+) ;
+
+

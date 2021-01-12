@@ -1,0 +1,20 @@
+yum -y install git
+yum -y install epel-release
+yum -y install freetds freetds-devel
+mkdir -p /download/tds_fdw
+cd /download/tds_fdw
+git clone https://github.com/tds-fdw/tds_fdw.git
+cd tds_fdw
+PATH=/db/postgresql_9.6.2/bin:$PATH make USE_PGXS=1
+PATH=/db/postgresql_9.6.2/bin:$PATH make USE_PGXS=1 install
+su - postgres
+psql -U postgres
+CREATE EXTENSION tds_fdw;
+
+service postgres restart
+
+
+
+-----------
+
+운영서버이면 아카이브도 설정!

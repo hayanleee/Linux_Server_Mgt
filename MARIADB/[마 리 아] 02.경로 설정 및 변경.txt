@@ -1,0 +1,45 @@
+[MariaDB경로 설정 및 변경]
+
++++++++++++++++++++++ MariaDB 5.X 기준 +++++++++++++++++++++++++++++
+[root@localhost /] df -h
+
+[root@localhost /] service mysql stop
+[root@localhost /] mkdir /home/mariadb
+[root@localhost /] mkdir /home/mariadb/data
+[root@localhost /] mkdir /home/mariadb/tmp
+
+[root@localhost /] chown -R mysql.mysql /home/mariadb
+[root@localhost /] cp -R -p /var/lib/mysql/* /maria/mysql
+
+[root@localhost /] vi /etc/my.cnf
+
+-----------------------------------------
+[mysqld]
+datadir = /home/mariadb/data
+tmpdir = /home/mariadb/tmp/ll
+
+
+------------------------------------------
+
+[root@localhost /] service mysql start
+
+
++++++++++++++++++++++ MariaDB 10.X 기준 +++++++++++++++++++++++++++++
+
+[root@localhost /] service mysql stop
+[root@localhost /] mkdir /maria
+[root@localhost /] chown mysql:mysql /mysql
+[root@localhost /] cp -R -p /var/lib/mysql/* /maria
+[root@localhost /] chmod 775 -R /maria
+[root@localhost /] vi /etc/my.cnf
+---------------------------------
+[mysqld]
+datadir = /mysql
+----------------------------------
+
+[root@localhost /] mysql_install_db
+
+*** 완료 되면 재부팅 실시 ******
+
+[root@localhost /] reboot
+

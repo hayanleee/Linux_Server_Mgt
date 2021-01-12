@@ -1,0 +1,5 @@
+[root@localhost /]  hostname [¿Ã∏ß«“≤®]
+[root@localhost /]  vi /etc/sysconfig/network
+[root@localhost /]  su -
+
+(setupø°º≠ «ÿ¡‡µµµ )

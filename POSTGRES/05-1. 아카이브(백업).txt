@@ -1,0 +1,36 @@
+
+<아카이브 백업서버에 베이스백업>
+
+
+[root@localhost ~]# crontab -e
+
+...
+00 07 * * * /usr/bin/basebackup.sh
+...
+
+[root@localhost ~]# vi /usr/bin/basebackup.sh			// IP 바꿔주기 !!!
+
+...
+#!/bin/bash
+
+BACKUPDIR="/pg_basebackup"
+MASTERIP="172.17.XXX.XX"
+
+if [ ! -d $BACKUPDIR ]; then
+    mkdir $BACKUPDIR
+    chown -R postgres.postgres $BACKUPDIR
+fi
+
+cd $BACKUPDIR
+
+rm -rf $BACKUPDIR/data_bak
+
+mv data data_bak
+
+su - postgres -c "pg_basebackup -h $MASTERIP -p 5432 -U postgres -D $BACKUPDIR/data --xlog --checkpoint=fast"
+...
+
+
+[root@localhost ~]# chmod 755 /usr/bin/basebackup.sh
+[root@localhost ~]# mkdir /pg_basebackup
+[root@localhost ~]# chown -R postgres.postgres /pg_basebackup

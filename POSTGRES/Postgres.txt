@@ -1,0 +1,7 @@
+* 특정 테이블 백업
+
+[postgres@local ~]$ pg_dump [DATABASE명] -t [TABLE명] > [저장될 DUMP FILE명]
+
+* 특정 테이블 복구
+
+[postgres@local ~]$ psql -f [FILE명] [DATABASE명]

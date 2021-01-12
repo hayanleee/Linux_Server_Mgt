@@ -1,0 +1,11 @@
+ ###### /home 을 500G로 줄이고 나머지를 lv_root 로 할당 방법 #####
+
+백업서버
+[root@localhost ~]# df -Ph
+[root@localhost ~]# umount /home
+[root@localhost ~]# lvreduce -r -L 500G /dev/VolGroup/lv_home
+[root@localhost ~]# lvresize -r -l+100%FREE /dev/VolGroup/lv_root
+[root@localhost ~]# mount /home
+[root@localhost ~]# lvdisplay
+
+

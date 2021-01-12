@@ -1,0 +1,5 @@
+[root@ ~ ]$ wget -q -O - http://linux.dell.com/repo/hardware/latest/bootstrap.cgi | bash
+
+[root@ ~ ]$ yum -y install srvadmin-all 
+
+[root@ ~ ]$ /opt/dell/srvadmin/sbin/srvadmin-services.sh start

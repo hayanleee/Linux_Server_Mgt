@@ -1,0 +1,111 @@
+
+
+[root@KOR_YWPS_S ~]# mkdir /download
+
+[root@KOR_YWPS_S ~]# mkdir -p /maria/mysql
+
+[root@KOR_YWPS_S ~]# mkdir /maria/log
+[root@KOR_YWPS_S ~]# mkdir /maria/tmp
+
+
+[root@KOR_YWPS_S ~]# chown -R mysql:mysql /maria
+
+// mysql:mysql 잘못된 사용자 라고 에러뜨면 mysql유저가 없어서그런거, 생성해주삼
+#useradd mysql
+
+[root@KOR_YWPS_S ~]# chmod -R 775 /maria
+
+[root@KOR_YWPS_S ~]# cd /download
+
+[root@KOR_YWPS_S download]# ftp (IP address)
+
+Name ((IP address):root): 
+Password:
+
+ftp> cd /homes/e20070703
+
+ftp> get mariadb-10.1.21.tar.gz
+
+ftp> exit
+
+////*    scp mariadb-10.1.21.tar.gz root@(IP address):/download/   *////
+
+
+
+[root@KOR_YWPS_S download]# tar zxvf mariadb-10.1.21.tar.gz
+
+[root@KOR_YWPS_S download]# mv mariadb-10.1.21-linux-x86_64 mariadb-10.1.21
+
+[root@KOR_YWPS_S download]# mv mariadb-10.1.21 /maria
+
+
+[root@KOR_YWPS_S ~]# cd /maria
+
+[root@KOR_YWPS_S local]# chown -R mysql:mysql mariadb-10.1.21
+
+[root@KOR_YWPS_S local]# chmod -R 775 mariadb-10.1.21
+
+
+# [root@KOR_YWPS_S local]#vi /etc/muy
+
+
+ 
+[root@KOR_YWPS_S local]# cp /maria/mariadb-10.1.21/support-files/mysql.server /etc/init.d/mysql
+
+[root@KOR_YWPS_S local]# vi /etc/init.d/mysql
+
+ .. 
+basedir=/maria/mariadb-10.1.21
+datadir=/maria/mysql
+..
+
+
+[root@KOR_YWPS_S local]# vi /etc/profile 		// export 위에 path 추가
+
+........
+........ 
+
+PATH=$PATH:/maria/mariadb-10.1.21/bin
+PATH=$PATH:/maria/mariadb-10.1.21/scripts
+
+export PATH USER LOGNAME MAIL HOSTNAME HISTSIZE HISTCONTROL
+
+....
+....
+
+[root@KOR_YWPS_S local]# source /etc/profile		// source가 컴파일임!
+
+// /etc/my.cnf 백업해주고 MARIADB setting[32G].txt를 my.cnf에 복붙! basedir 경로 확인필수!!!
+
+
+[root@KOR_YWPS_S local]# mysql_install_db --basedir=/maria/mariadb-10.1.21 --datadir=/maria/mysql --defaults-file=/etc/my.cnf
+
+
+[root@KOR_YWPS_S local]# chown -R mysql:mysql /maria
+[root@KOR_YWPS_S local]# chmod -R 775 /maria
+
+[root@KOR_YWPS_S local]# service mysql restart
+
+// 여기서 위에꺼 에러나는이유는.. restart가 서비스돌아가고있는걸 멈췄다 시작시키는거자나?
+// 근데 돌아가는게 없었어서 실패뜰수밖에 없던거! stop 해주고 start 해주면 에러안날거임 ㅋㅁㅋ
+
+[root@KOR_YWPS_S local]# mysqladmin -u root password
+
+[root@KOR_YWPS_S local]# chkconfig mysql on
+
+[root@KOR_YWPS_S local]# mysql -uroot -p1588yura
+
+/* 리눅스에서 sql 접속 시 패스워드를 보이게끔 유저명과 같이 이어서 입력하는 방법은 보안상 좋지 않은 방법이라고 한다. */
+
+
+// 원격접속 허용
+MariaDB [(none)]> GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY '1588yura' WITH GRANT OPTION;
+MariaDB [(none)]> flush privileges;
+
+
+
+
+
+
+
+

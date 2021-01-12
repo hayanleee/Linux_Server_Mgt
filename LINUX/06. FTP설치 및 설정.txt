@@ -1,0 +1,73 @@
+**************************
+vsftpd : ftp 데몬 중 하나
+**************************
+
+[root@localhost /] yum -y install vsftpd
+
+[root@localhost /] vi /etc/sysconfig/iptables
+
+----------------- vi 편집기 ------------------------------------
+...
+-A INPUT -m state --state NEW -m tcp -p tcp --dport 20 -j ACCEPT
+-A INPUT -m state --state NEW -m tcp -p tcp --dport 21 -j ACCEPT
+...
+(20,21번 포트는 ftp포트이다.)
+----------------------------------------------------------------
+
+[root@localhost /] service iptables restart 
+#ftp 설치는 방화벽이 설정되어있어야함 setup
+
+[root@localhost /] vi /etc/vsftpd/user_list 
+  #root #주석처리 #user_list가 거부 명단
+
+[root@localhost /] vi /etc/vsftpd/ftpusers
+  #root #주석처리 #ftpusers가 거부 명단
+
+
+# FTP 접속 시 530 번 500 Error 발생
+
+[root@localhost /] setsebool -P ftp_home_dir 1
+[root@localhost /] chkconfig --level 2345 vsftpd on
+
+
+# root 접속시 500 OOPS 에러 발생
+[root@localhost /] setenforce 0  
+
+
+# local 에 별도로 ftp 를 설치해야 원격으로 접속 가능
+[root@localhost /] yum -y install ftp
+
+
+[root@localhost /] useradd mesplus
+[root@localhost /] passwd mesplus
+[root@localhost /] useradd wms_user
+[root@localhost /] passwd wms_user
+
+[root@localhost /] cd /home
+[root@localhost /] chmod -R 755 mesplus
+[root@localhost /] chmod -R 755 wms_user
+ 
+
+ -- 패스워드 설정 -- 
+
+
+[root@localhost /]  vi /etc/vsftpd/vsftpd.conf
+
+...
+anonymous_enable=YES # NO로 변경
+(익명 사용자의 접속 거부)
+...
+
+[root@localhost /] service vsftpd restart
+
+
+
+
+===================================================
+ftp끝났으면
+
+vi /etc/sysconfig/selinux 에서
+SELINUX=disabled
+
+setup 에서
+방화벽 해제

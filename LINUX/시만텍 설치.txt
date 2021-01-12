@@ -1,0 +1,23 @@
+[root@ ~]# mkdir /SEP
+
+-------------------
+
+[root@ ~]# scp SEP_Linux_rpm_14.0_MP1.zip root@(IP address):/SEP
+
+-------------------
+
+[root@ ~]# cd /SEP/
+[root@ ~]# ll
+[root@ ~]# yum install glibc.i686 / libX11.i686
+[root@ ~]# yum -y groupinstall "Development Tools"
+[root@ ~]# unzip SEP_Linux_rpm_14.0_MP1.zip -d ./SEP_Linux_rpm_14.0_MP1
+[root@ ~]# cd SEP_Linux_rpm_14.0_MP1
+[root@ ~]# chmod 755 install.sh
+[root@ ~]# ./install.sh -i
+
+/opt/Symantec/symantec_antivirus ¿¡¼­
+
+[root@ ~]# ./sav info -d
+[root@ ~]# ./sav manage -s
+[root@ ~]# ./sav manage -p
+[root@ ~]# ./sav info -a

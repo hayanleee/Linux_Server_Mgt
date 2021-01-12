@@ -1,0 +1,196 @@
+[client-server]
+
+#
+# include all files from the config directory
+#
+[client]
+#user = mysql
+#default-character-set = utf8
+socket = /maria/mysql/mysql.sock
+
+[mysqld]
+user = mysql
+port = 3306
+socket  = /maria/mysql/mysql.sock
+datadir = /maria/mysql
+basedir = /usr/local/mariadb
+tmpdir = /maria/tmp
+log-bin = /maria/log/bin.log
+log-error = /maria/log/mysql.err
+log-bin-index = /maria/log/log-bin.index
+#innodb_data_file_path = ibdata1:10M:autextend
+innodb_data_home_dir = /maria/mysql
+innodb_log_group_home_dir = /maria/mysql
+
+#performance_schema = 1
+
+max_connections = 1024
+max_connect_errors = 99999
+
+#innodb_force_recovery = 2
+#bind-address = (IP address)
+
+# Table_open_cache = total_tables*Threads_connected*.50
+# total_tables : SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE='BASE TABLE';
+# Threads_connected : show global status like '%Threads_connected%';
+# 200* 75(M/W Thread) * 0.5
+table_open_cache = 2048
+
+open_files_limit = 8192
+
+group_concat_max_len = 10M
+
+# binlog_cache_size = 32768 (32K)
+binlog_cache_size = 1M
+
+# max_heap_table_size = 16M
+max_heap_table_size = 128M
+
+##########
+# read_buffer_size = 131072 (128K) <-- 128K로 설정했을때 가장 빠른 성능?
+read_buffer_size = 8M
+
+# read_rnd_buffer_size = 262144 (256K) <-- 64K ~ 128K 수준의 설정이 좋다?
+read_rnd_buffer_size = 16M
+
+# sort_buffer_size = 2097152 (2M)
+sort_buffer_size = 8M
+
+# join_buffer_size = 262144 (256K)
+join_buffer_size = 8M
+##########
+
+# thread_cache_size = 0
+# 5% of max_connections
+thread_cache_size = 128
+
+# query_cache_size = 1048576 (1M)
+#query_cache_size = 64M
+
+# 이 변수 값보다 큰 쿼리결과는 캐싱이 안됨
+# http://sqlmvp.kr/220426939740
+# query_cache_limit = 1048576 (1M)
+#query_cache_limit = 512K
+
+
+# query_cache_type = 0 (OFF)
+#query_cache_type = 1
+
+# tmp_table_size = 16777216 (16M)
+tmp_table_size = 128M
+
+# Config Character set
+init_connect = SET collation_connection = utf8_general_ci
+init_connect = SET NAMES utf8
+character-set-server = utf8
+collation-server = utf8_unicode_ci
+
+#슬로우쿼리 활성/비활성
+slow_query_log = 1
+
+#설정된 시간 이상 소요되는 쿼리는 모두 slow_query_log_file에 설정된 파일로 기록
+long_query_time = 7
+
+#인덱스를 사용하지 않는 쿼리 추출용 옵션 변수
+#log_queries_not_using_indexes = 1
+
+# Create Function 이 되게 하려면
+log_bin_trust_function_creators  = 1
+
+binlog_format = Mixed
+
+# slow_queries를 파일/테이블로 저장 log_output = 'FILE'
+log_output = 'TABLE'
+
+# 역 DNS 검색 비활성화
+skip-name-resolve
+
+# 외부(TCP/IP) 잠금 비활성
+skip-external-locking
+
+skip-host-cache
+
+# show global variables like 'have_symlink' (2016.06.09 msk)
+skip_symbolic_links
+
+# 함수 sysdate()와 now() 동일하게 처리
+sysdate-is-now
+
+# 32M로 설정
+max_allowed_packet = 1G
+innodb_log_file_size = 256M
+
+#*** MyISAM Specific options
+key_buffer_size = 256M
+bulk_insert_buffer_size = 64M
+myisam_sort_buffer_size =128M
+myisam_max_sort_file_size = 10G
+myisam_repair_threads = 1
+
+# *** INNODB Specific options ***
+
+#innodb_additional_mem_pool_size = 8M
+innodb_additional_mem_pool_size = 16M
+
+innodb_buffer_pool_size = 21G
+
+innodb_buffer_pool_instances = 12
+
+innodb_file_per_table = ON
+innodb_flush_method = O_DIRECT
+
+innodb_write_io_threads = 16
+innodb_read_io_threads = 16
+
+innodb_flush_log_at_trx_commit = 1
+
+innodb_open_files = 8192
+
+# 최대 가능한 IOPs(초당 디스크 입출력 조작 가능 횟수)
+# 00GB 15K RPM SAS 6Gbps 2.5in Hot-plug Hard Drive,3.5in HYB CARR,13G   ---> 4EA
+#innodb_io_capacity = 200 (2016.06.09 msk)
+innodb_io_capacity = 500
+
+#innodb_read_io_threads = 4
+#innodb_read_io_threads = 16
+
+#innodb_write_io_threads = 4
+#innodb_write_io_threads = 16
+
+#innodb_thread_concurrency = 0
+#innodb_thread_concurrency = 16
+
+# (2016.06.09 msk )
+thread_handling = pool-of-threads
+thread_pool_size = 32
+thread_pool_max_threads = 1024
+thread_pool_idle_timeout = 10
+
+# STRICT_TRANS_TABLES(트랜잭션 스토리지 엔진에 대한 제한모드)
+# STRICT_TRANS_TABLES : 원하지 않는 데이터 타입의 변환이 필요할 때 강제 변환하지 않고 에러를 발생시킴
+sql-mode="STRICT_TRANS_TABLES,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION"
+innodb_defragment = 1
+
+#set wait_timeout = 60
+
+[myisamchk]
+key_buffer_size = 256M
+sort_buffer_size = 256M
+read_buffer = 8M
+write_buffer = 8M
+
+[mysqlhotcopy]
+interactive-timeout
+
+[mysqld_safe]
+#open_files_limit= Table_open_cache*2
+open_files_limit = 8192
+
+[mysqldump]
+default-character-set = utf8
+quick
+max_allowed_packet = 1G
+
+[mysql]
+no-auto-rehash
+default-character-set = utf8

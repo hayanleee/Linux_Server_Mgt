@@ -1,0 +1,94 @@
+(vi /db/postgresql_9.6.2/data/postgresql.conf)
+
+
+listen_addresses = '*'				// 59
+max_connections = 1000				// 64
+
+
+(free -m 해서 몇G인지 확인 후)
+
+=== <<16 ==  (※ postgres 9.6 기준)
+shared_buffers = 1GB
+effective_cache_size = 3GB
+work_mem = 1000kB
+maintenance_work_mem = 300MB
+#min_wal_size = 1GB
+#max_wal_size = 2GB
+checkpoint_completion_target = 0.9
+wal_buffers = 16MB
+default_statistics_target = 100
+============
+
+=== 16G ==  (※ postgres 9.6 기준)
+shared_buffers = 4GB
+work_mem = 2097kB
+maintenance_work_mem = 1GB
+wal_buffers = 16MB
+min_wal_size = 1GB
+max_wal_size = 2GB
+checkpoint_completion_target = 0.9
+effective_cache_size = 12GB
+default_statistics_target = 100
+============
+
+=== 32G ==  (※ postgres 9.6 기준)
+shared_buffers = 8GB
+work_mem = 4194kB
+maintenance_work_mem = 2GB
+wal_buffers = 16MB
+max_wal_size = 2GB
+min_wal_size = 1GB
+checkpoint_completion_target = 0.9
+effective_cache_size = 24GB
+default_statistics_target = 100
+============
+
+==== 64G ====
+max_connections = 1000
+shared_buffers = 16GB
+work_mem = 8388kB
+maintenance_work_mem = 2GB
+wal_buffers = 16MB
+min_wal_size = 1GB
+max_wal_size = 2GB
+checkpoint_completion_target = 0.9
+effective_cache_size = 48GB
+default_statistics_target = 100
+====================
+
+==== 128G ====
+max_connections = 1000				-- 64	
+shared_buffers = 32GB				-- 113
+work_mem = 16777kB				-- 122
+maintenance_work_mem = 2GB			-- 123
+wal_buffers = 16MB				-- 195
+max_wal_size = 2GB				-- 206
+min_wal_size = 1GB				-- 207
+checkpoint_completion_target = 0.9		-- 208
+effective_cache_size = 96GB			-- 303
+default_statistics_target = 100			-- 317
+====================
+
+
+== 공통 ==
+log_destination = 'stderr'			-- 332 
+logging_collector = on				-- 338
+log_directory = 'pg_log'			-- 344
+log_filename = 'postgresql-%a.log'		-- 346
+log_truncate_on_rotation = on			-- 350
+log_rotation_age = 1d 				-- 358
+log_rotation_size = 0				-- 360
+log_min_duration_statement = 20000		-- 414
+log_line_prefix = '< %m:%u@%h >' 		-- 432
+log_statement = 'mod'				-- 454
+log_timezone = 'Asia/Shanghai'			-- 459
+
+autovacuum = on					-- 495
+
+timezone = 'Asia/Shanghai'			-- 555
+==========
+Europe/Moscow
+
+그리고 utf8을 kor이거 -> en_US로 바꿔주고!
+
+ko_KR.UTF-8	->	en_US.UTF-8		-- 568 (4줄)

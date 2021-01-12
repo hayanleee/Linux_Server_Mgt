@@ -1,0 +1,247 @@
+/* --------------------------
+
+vi /usr/local/etc/odbcinst.ini
+rm -rf /opt/microsoft/sqlncli
+rm -rf /usr/bin/sqlcmd
+rm -rf /usr/bin/bcp
+odbcinst -u -d -n "SQL Server Native Client 11.0"
+rm -rf /download/odbc/pyodbc-3.0.10
+rm -rf /download/odbc/sqlncli-11.0.1790.0
+
+--------------------------- */
+
+mkdir -p /download/odbc
+cd /download/odbc
+ftp 172.21.X.XX
+ # id/password 입력
+ftp> cd /homes/e20070703
+ftp> get pyodbc-3.0.10.tar.gz
+ftp> get sqlncli-11.0.1790.0.tar.gz
+ftp> get unixODBC-2.3.0.tar.gz
+ftp> exit
+
+---------- 참고 -----------
+scp pyodbc-3.0.10.tar.gz root@172.16.XXX.XX:/download/odbc/
+scp sqlncli-11.0.1790.0.tar.gz root@172.16.XXX.XX:/download/odbc/
+scp unixODBC-2.3.0.tar.gz root@172.16.XXX.XX:/download/odbc/
+---------------------------
+
+tar zxvf pyodbc-3.0.10.tar.gz
+tar zxvf sqlncli-11.0.1790.0.tar.gz
+cp unixODBC-2.3.0.tar.gz sqlncli-11.0.1790.0/
+
+
+cd /download/odbc/sqlncli-11.0.1790.0
+tar zxvf unixODBC-2.3.0.tar.gz
+
+
+cd /download/odbc/sqlncli-11.0.1790.0/unixODBC-2.3.0
+./configure
+make
+make install
+
+
+odbc_config --odbcinstini
+
+
+cd /download/odbc/sqlncli-11.0.1790.0
+./install.sh install
+
+
+    ...
+11. EXCLUSIONS DE GARANTIE. LE LOGICIEL EST CONCEDE SOUS LICENCE ≪ EN L’ETAT ≫.
+    VOUS ASSUMEZ TOUS LES RISQUES LIES A SON UTILISATION. MICROSOFT N’ACCORDE
+    AUCUNE GARANTIE OU CONDITION EXPRESSE. VOUS POUVEZ BENEFICIER DE DROITS
+    DES CONSOMMATEURS SUPPLEMENTAIRES DANS LE CADRE DU DROIT LOCAL, QUE CE
+    CONTRAT NE PEUT MODIFIER. LORSQUE CELA EST AUTORISE PAR LE DROIT LOCAL,
+    MICROSOFT EXCLUT LES GARANTIES IMPLICITES DE QUALITE, D’ADEQUATION A UN
+    USAGE PARTICULIER ET D’ABSENCE DE CONTREFACON.
+
+12. LIMITATION ET EXCLUSION DE RECOURS ET DE DOMMAGES. VOUS POUVEZ OBTENIR DE
+    MICROSOFT ET DE SES FOURNISSEURS UNE INDEMNISATION EN CAS DE DOMMAGES
+    DIRECTS LIMITEE UNIQUEMENT A HAUTEUR DE 5,00 $ US. VOUS NE POUVEZ
+    PRETENDRE A AUCUNE INDEMNISATION POUR LES AUTRES DOMMAGES, Y COMPRIS LES
+    DOMMAGES SPECIAUX, INDIRECTS OU ACCESSOIRES ET PERTES DE BENEFICES.
+
+    Cette limitation concerne :
+
+    ? toute affaire liee au logiciel, aux services ou au contenu (y compris
+      le code) figurant sur des sites Internet tiers ou dans des programmes
+      tiers et
+
+    ? les reclamations au titre de violation de contrat ou de garantie, ou
+      au titre de responsabilite stricte, de negligence ou d’une autre
+      faute dans la limite autorisee par la loi en vigueur.
+
+    Elle s’applique egalement meme si Microsoft connaissait l'eventualite
+    d'un tel dommage. La limitation ou exclusion ci-dessus peut egalement
+    ne pas vous etre applicable, car votre pays n’autorise pas l’exclusion
+    ou la limitation de responsabilite pour les dommages indirects,
+    accessoires ou de quelque nature que ce soit.
+
+# Enter YES to accept the license or anything else to terminate the installation:  #(YES 치고 빠져나옴) 
+Enter YES to accept the license or anything else to terminate the installation: YES
+
+   ....
+
+
+odbcinst -q -d -n "SQL Server Native Client 11.0"
+
+
+cd /download/odbc/pyodbc-3.0.10
+python setup.py build
+python setup.py install
+
+
+sqlcmd #error 없을때까지 링크 걸어줌
+
+
+ln -s /usr/lib64/libcrypto.so.10 /usr/lib64/libcrypto.so.6
+ln -s /usr/lib64/libssl.so.10 /usr/lib64/libssl.so.6
+ln -s /usr/local/lib/libodbc.so.1 /usr/lib64/libodbc.so.1
+ln -s /usr/local/lib/libodbcinst.so /usr/lib64/libodbcinst.so.1
+
+
+------------------------------- 모르겠을때 참고 -----------------
+
+[root@sc-mes1 pyodbc-3.0.10]# sqlcmd
+sqlcmd: error while loading shared libraries: libcrypto.so.6: cannot open shared object file: No such file or directory
+[root@sc-mes1 pyodbc-3.0.10]# find / -name libcrypto*
+/usr/lib64/libcrypto.so.10
+/usr/lib64/libcrypto.so
+/usr/lib64/pkgconfig/libcrypto.pc
+/usr/lib64/libcrypto.so.1.0.1e
+[root@sc-mes1 pyodbc-3.0.10]# ln -s /usr/lib64/libcrypto.so.10 /usr/lib64/libcrypto.so.6
+
+
+
+
+
+find / -name libcrypto*
+   ...
+/download/odbc/sqlncli-11.0.1790.0/unixODBC-2.3.0/extras/.libs/libodbcextraslc.la
+/download/odbc/sqlncli-11.0.1790.0/unixODBC-2.3.0/extras/.libs/libodbcextraslc.a
+/download/odbc/sqlncli-11.0.1790.0/unixODBC-2.3.0/extras/libodbcextraslc.la
+/usr/local/lib/libodbc.la
+/usr/local/lib/libodbc.so.1.0.0
+/usr/local/lib/libodbc.so.1
+/usr/local/lib/libodbccr.la
+/usr/local/lib/libodbcinst.so.1.0.0
+/usr/local/lib/libodbcinst.so.1
+/usr/local/lib/libodbcinst.so
+/usr/local/lib/libodbccr.so.1
+/usr/local/lib/libodbccr.so.1.0.0
+/usr/local/lib/libodbc.so
+/usr/local/lib/libodbccr.so
+/usr/local/lib/libodbcinst.la
+  ...
+
+
+ln -s 찾은거 /usr/lib64/없는거 
+ex) ln -s /usr/local/lib/libodbc.so /usr/lib64/libodbc.so
+
+------------------------------------------------------------------
+
+sqlcmd -S tcp:172.29.XXX.XXX -U sa -P '!1588yura' -Q "select getdate()"  # 테스트
+
+
+
+## 아래도 확인...
+
+
+ldd /opt/microsoft/sqlncli/lib64/libsqlncli-11.0.so.1790.0
+
+        linux-vdso.so.1 =>  (0x00007ffd95bd9000)
+        libcrypto.so.6 => not found
+        libdl.so.2 => /lib64/libdl.so.2 (0x00007f2948e9a000)
+        librt.so.1 => /lib64/librt.so.1 (0x00007f2948c92000)
+        libssl.so.6 => not found
+        libuuid.so.1 => /lib64/libuuid.so.1 (0x00007f2948a8d000)
+        libodbcinst.so.1 => not found
+        libkrb5.so.3 => /lib64/libkrb5.so.3 (0x00007f29487a6000)
+        libgssapi_krb5.so.2 => /lib64/libgssapi_krb5.so.2 (0x00007f2948561000)
+        libstdc++.so.6 => not found
+        libm.so.6 => /lib64/libm.so.6 (0x00007f29482dd000)
+        libgcc_s.so.1 => /lib64/libgcc_s.so.1 (0x00007f29480c6000)
+        libpthread.so.0 => /lib64/libpthread.so.0 (0x00007f2947ea9000)
+        libc.so.6 => /lib64/libc.so.6 (0x00007f2947b15000)
+        /lib64/ld-linux-x86-64.so.2 (0x000000307c000000)
+        libk5crypto.so.3 => /lib64/libk5crypto.so.3 (0x00007f29478e8000)
+        libcom_err.so.2 => /lib64/libcom_err.so.2 (0x00007f29476e4000)
+        libkrb5support.so.0 => /lib64/libkrb5support.so.0 (0x00007f29474d9000)
+        libkeyutils.so.1 => /lib64/libkeyutils.so.1 (0x00007f29472d5000)
+        libresolv.so.2 => /lib64/libresolv.so.2 (0x00007f29470bb000)
+        libselinux.so.1 => /lib64/libselinux.so.1 (0x00007f2946e9b000)
+
+
+ln -s /usr/lib64/libcrypto.so.10 /usr/lib64/libcrypto.so.6
+ln -s /usr/lib64/libssl.so.10 /usr/lib64/libssl.so.6
+ln -s /usr/local/lib/libodbcinst.so.1 /usr/lib64/libodbcinst.so.1
+ln -s /usr/local/lib/libodbc.so.1 /usr/lib64/libodbc.so.1
+ln -s /usr/lib64/libstdc++.so.6.0.13 /usr/lib64/libstdc++.so.6
+
+
+# 이것도 확인
+ldd `which sqlcmd`
+        linux-vdso.so.1 =>  (0x00007ffc311f2000)
+        libcrypto.so.6 => /usr/lib64/libcrypto.so.6 (0x00000036b7400000)
+        libdl.so.2 => /lib64/libdl.so.2 (0x000000307c400000)
+        librt.so.1 => /lib64/librt.so.1 (0x000000307d000000)
+        libssl.so.6 => /usr/lib64/libssl.so.6 (0x00000036b8c00000)
+        libuuid.so.1 => /lib64/libuuid.so.1 (0x000000307f800000)
+        libodbc.so.1 => not found
+        libstdc++.so.6 => /usr/lib64/libstdc++.so.6 (0x00000036b6c00000)
+        libm.so.6 => /lib64/libm.so.6 (0x000000307d400000)
+        libgcc_s.so.1 => /lib64/libgcc_s.so.1 (0x00000036b6800000)
+        libpthread.so.0 => /lib64/libpthread.so.0 (0x000000307cc00000)
+        libc.so.6 => /lib64/libc.so.6 (0x000000307c800000)
+        libz.so.1 => /lib64/libz.so.1 (0x000000307d800000)
+        /lib64/ld-linux-x86-64.so.2 (0x000000307c000000)
+        libgssapi_krb5.so.2 => /lib64/libgssapi_krb5.so.2 (0x0000003eb6a00000)
+        libkrb5.so.3 => /lib64/libkrb5.so.3 (0x0000003eb6200000)
+        libcom_err.so.2 => /lib64/libcom_err.so.2 (0x0000003082800000)
+        libk5crypto.so.3 => /lib64/libk5crypto.so.3 (0x0000003eb6600000)
+        libkrb5support.so.0 => /lib64/libkrb5support.so.0 (0x0000003eb5e00000)
+        libkeyutils.so.1 => /lib64/libkeyutils.so.1 (0x0000003084000000)
+        libresolv.so.2 => /lib64/libresolv.so.2 (0x000000307ec00000)
+        libselinux.so.1 => /lib64/libselinux.so.1 (0x0000003eb5200000)
+
+
+[root@sc_mes2 ~]# find / -name libodbc*
+    ....
+/usr/lib64/libodbcinst.so.6
+/usr/lib64/libodbcpsqlS.so.2
+/usr/lib64/libodbcmyS.so.2
+/usr/lib64/libodbcpsqlS.so
+/usr/lib64/libodbcinst.so.1
+/usr/lib64/libodbcnnS.so.2
+/usr/lib64/libodbctxtS.so.2.0.0
+/usr/lib64/libodbc.so.2.0.0
+/usr/lib64/libodbcinst.so
+/usr/lib64/libodbcinst.so.2
+/usr/lib64/libodbcmyS.so
+/usr/lib64/libodbc.so.2
+/usr/lib64/libodbcmyS.so.2.0.0
+/usr/lib64/libodbccr.so.2
+/usr/lib64/libodbcnnS.so.2.0.0
+/usr/lib64/libodbcinst.so.2.0.0
+/usr/lib64/libodbctxtS.so.2
+/usr/lib64/libodbcdrvcfg2S.so.2
+/usr/lib64/libodbcminiS.so.2
+    ....
+
+ln -s /usr/lib64/libodbcinst.so.2 /usr/lib64/libodbc.so.1
+ln -s /usr/lib64/libltdl.so.7.2.1 /usr/lib64/libltdl.so.7
+
+
+
++++++++++++++++++++ 필히 확인
+
+
+find / -name odbcinst.ini
+# /etc/ 에도 파일이 있을경우(위에있는걸 아래껄로 덮어)
+cp -Rp /usr/local/etc/odbcinst.ini /etc/odbcinst.ini
+
+
+
+        

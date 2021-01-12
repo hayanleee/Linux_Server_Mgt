@@ -1,0 +1,71 @@
+[리눅스 시간 동기화] - 시스템 cron 사용
+
+[root@localhost /]  vi /etc/cron.monthly/time-sync.cron
+----------------------------------------------------------------------
+#!/bin/bash
+/usr/bin/rdate -s time.bora.net && /sbin/clock -w
+----------------------------------------------------------------------
+
+[root@localhost /]  chmod 755 /etc/cron.monthly/time-sync.cron
+
+[root@localhost /]  /etc/cron.monthly/time-sync.cron
+
+[root@localhost /]  vi /etc/crontab
+----------------------------------------------------------------------
+SHELL=/bin/bash
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+MAILTO=root
+HOME=/
+
+# run-parts
+00 5 1 * * root run-parts /etc/cron.monthly   #매월 1일 05시 시간 동기화
+(↑순서: 분,시간,일,월,요일)
+----------------------------------------------------------------------
+
+
+[root@localhost /] cd /etc/sysconfig
+[root@localhost /] vi clock
+
+
+
+
+/////////db/postgresql_9.4.2/share/timezone
+
+
+※※※※※※※※※※※※※※※※※※※※※ 참고 ※※※※※※※※※※※※※※※※※
+
+
+cmos 시간 확인 
+[root@localhost /] clock -r  
+
+리눅스 운영체제 시간 -> CMOS 시간 변경
+[root@localhost /] clock -w
+
+CMOS 시간 -> 리눅스 운영체제 시간
+[root@localhost /] clock -s 
+
+운영체제 시간 확인
+[root@localhost /] date
+
+
+변경 (※2016.05.05 08:13) 
+[root@localhost /] date 05050813002016
+
+ 시간동기화
+[root@localhost /] rdate -s time.bora.net
+(time.bora.net : 동기화를 할 기준이 되는 서버) 
+
+시스템 시간이 지역이 안맞아서 다르게 나타날경우
+ex) 2016.03.21 (월) 11:00:00 EDT 
+
+[root@localhost /] mv /etc/localtime /etc/localtime_org
+[root@localhost /] ln -s /usr/share/zoneinfo/Asia/Seoul /etc/localtime
+[root@localhost /] rdate -s time.bora.net 
+
+변경 되지 않는 경우 
+ - 일본시간으로 변경
+[root@localhost /] ln -s /usr/share/zoneinfo/Asia/Tokyo /etc/localtime
+
+
+
+

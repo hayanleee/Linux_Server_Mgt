@@ -1,0 +1,21 @@
+0. 레이드 & 핫스페어 설정
+
+1. 첫 번째 Install or upgrade an existing system 클릭
+
+2. Media Check -> Skip
+
+3. English -> U.S.English
+
+4. Basic Storage Devices
+
+5. Root Password : 1588yura!
+   Confirm : 1588yura!
+
+6. Use All Space
+
+7. Write changes to disk
+
+8. Database Server -> 맨 아래 Customize now
+
+9. Databases -> 네개 체크 모두 해제 (SQL)
+

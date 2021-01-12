@@ -1,0 +1,75 @@
++++++++ i_mes drop 하고 스키마 복원해야댐... ++++++++
++++++++ (혹시 데이터 전체 백업하고 할생각??) ++++++++
+
+
+[다른 서버 간의 postgreSQL schema backup/restore]
+
+172.21.AA.AA에 i_mes데이터베이스의 스키마를 백업해서 172.21.XX.XX에 복원하기
+
+=============================================
+<172.21.AA.AA>
+
+[root@~] mkdir /Schema_Bak
+[root@~] vi /Schema_Bak/i_mes_s.bak		(저장하고 나오기)
+[root@~] chown -R postgres.postgres /Schema_Bak
+[root@~] su - postgres
+[postgres@~] pg_dump -d i_mes -U postgres -Fc -s -b -f /Schema_Bak/i_mes_s.bak
+
+=============================================
+<172.21.XX.XX>
+[root@~] mkdir /Schema_Bak
+[root@~] vi /Schema_Bak/i_mes_s.bak
+[root@~] chown -R postgres.postgres /Schema_Bak
+[root@~] ftp 172.21.XX.XX			(ID: root / PW:)
+ftp>get /Schema_Bak/i_mes_s.bak /Schema_Bak/i_mes_s.bak
+ftp>exit
+[root@~] su - postgres
+[postgres@~] pg_restore -U postgres -Fc -s -d i_mes < /Schema_Bak/i_mes_s.bak
+(이 계정에 i_mes라는 DB가 있어야 함)
+
+
+***ftp 말고 AA번에서 scp i_mes_s.bak root@172.21.XX.XX:/Schema_Bak/i_mes_s.bak 해도됨***
+---------------------------------------------
+
+postgres=# \dn		(스키마 목록)
+postgres=# \l		(데이터베이스 목록)
+postgres=# \c i_mes	(다른 데이터베이스에 접속)
+i_mes=# \q		(psql 종료)
+
+---------------------------------------------
+
+ftp 말고 다른방법!
+1. scp 파일이름 root@IP주소		-> scp 가져갈파일 root@가져갈ip:/넣을디렉토리
+					   scp i_mes_s.bak root@172.21.XX.XX:/db/dbbackup
+2. rsync
+
+
+
+
+
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+만~~약에 붙어있는거있어서 drop database i_mes가 안될 때!
+
+[postgres@~] pg_ctl restart		# 서버 재시작
+
+psql 들어가서
+
+postgres=# drop database i_mes;
+
+postgres=#  CREATE DATABASE i_mes
+     WITH OWNER = mesplus
+       ENCODING = 'UTF8'
+        TABLESPACE = pg_default
+        LC_COLLATE = 'ko_KR.UTF-8'
+        LC_CTYPE = 'ko_KR.UTF-8'
+        CONNECTION LIMIT = -1;     # DB생성
+
+postgres=#        CREATE EXTENSION pgcrypto  SCHEMA public  VERSION "1.3";                         # pgcrypto   확장모듈 추가
+postgres=#        CREATE EXTENSION plpython2u SCHEMA pg_catalog VERSION "1.0";                  # plpython2u 확장모듈 추가
+postgres=#        UPDATE pg_language SET lanpltrusted = true WHERE lanname = 'plpython2u';     # pg_language  언어변경 (왜하는지 모르겠음.)
+postgres=#        CREATE EXTENSION dblink;                                                                        # dblink확장모듈 추가
+postgres=#        CREATE EXTENSION postgres_fdw;  
+
+
+

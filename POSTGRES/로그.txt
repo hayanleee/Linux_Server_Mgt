@@ -1,0 +1,43 @@
+※postgres 로그
+
+[root@localhost ~]# cd /db/postgresql_9.6.2/data/pg_log
+
+# 실시간 로그 확인
+[root@localhost ~]# tail -f [파일명]
+# 특정 단어만 추출
+[root@localhost ~]# cat [파일명] | grep "ERROR"
+
+
+※리눅스 로그
+[root@localhost ~]# /var/log/messages
+
+
+※이중화 로그
+[root@localhost ~]# /opt/ARCserveRHA/bin/log/ws_rep.log 
+
+---------------------------------
+
+pg_log:
+This is a default database logs like: error messages, executed query log, 
+dead lock information, Postgers start/stop messages.
+
+pg_clog:
+It contains logs for transaction metadata. 
+PostgreSQL server access this folder to take the decision like which transaction completed or which did not.
+
+pg_xlog:
+It contains the main binary transaction log data or binary log files. 
+If you are planning for replication or Point in time Recovery, we can use this transaction log files.
+
+
+
+
+
+
+
+
+
+
+
+
+

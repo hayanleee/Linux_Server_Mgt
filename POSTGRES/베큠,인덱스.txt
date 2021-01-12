@@ -1,0 +1,25 @@
+su - postgres
+psql
+\c i_mes
+
+
+-- DB 전체 풀 실행
+vacuum full analyze;
+-- DB 전체 풀 실행하면서 상태 출력
+vacuum full verbose analyze;      
+-- DB 전체 간단하게 실행
+vacuum verbose analyze;
+-- 해당 테이블만 간단하게 실행
+vacuum analyse [테이블명];
+-- 특정 테이블만 풀 실행
+vacuum full [테이블명];
+
+
+
+-- 인덱스 잡는법
+reindex table [테이블명];
+-- (베큠 끝나고) 테이블 전체로 인덱스 하기 힘들면 
+   인덱스 단위로 하나하나 해보는 방법
+REINDEX INDEX [인덱스명];
+-- 인덱스 DB 단위로 잡는법
+reindex database [디비명];

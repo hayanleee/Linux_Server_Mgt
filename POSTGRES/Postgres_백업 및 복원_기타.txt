@@ -1,0 +1,40 @@
+
+ * 데이터는 -s (스키마) 대신 -a
+
+-----------------------------------------------
+
+ * 병렬덤프 (테이블 8개씩이라 -j 8)
+
+[root@localhost ~ ]$ vi /db/postgresql_9.6.2/data/postgresql.conf
+
+...
+full_page_writes = off
+autovacuum = off
+wal_buffers = -1
+...
+
+
+[root@localhost ~ ]$ pg_dump -j 8 -Fd -f /db/dbbackup/20180412 i_mes
+
+복원하고 설정파일 원래대로 변경!
+
+-----------------------------------------------
+
+ * 풀백업 파일에서 table만 추출해서 복원
+
+테스트 서버에서 기존에 있는 테이블 일단 
+create table j_ipgo_back as select * from j_ipgo; 요렇게 백업 테이블 생성해 놓고,
+
+[postgres@localhost ~ ]$ pg_restore -U postgres --data-only --table=j_ipgo -d i_mes < /db/i_mes03.backup
+
+
+-----------------------------------------------
+
+원하는 테이블만 백업 및 복원
+
+[백업]
+[postgres@localhost ~ ]$ pg_dump [DATABASE명] -t [TABLE명] > [저장 될 DUMP FILE명]
+// 예시 : pg_dump postgres -t sys_backupcheck > /test/sys_bak.dmp
+
+[복구]
+[postgres@localhost ~ ]$ psql -f [FILE명] [DATABASE명]
